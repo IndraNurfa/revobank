@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// table here
+enum account_transaction_type {
+  CREDIT
+  DEBIT
+}
+
+enum transaction_type {
+  TOPUP
+  PURCHASE
+  TRANSFER
+  WITHDRAWAL
+  REFUND
+}
+
+enum transaction_status {
+  PENDING
+  SUCCESS
+  FAILED
+  REVERSED
+}
+
+model Role {
+  id         Int     @id @default(autoincrement())
+  name       String  @unique
+  is_active  Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users      User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(20)
+  email        String   @unique @db.VarChar(100)
+  phone_number String   @unique @db.VarChar(15)
+  full_name    String   @db.VarChar(100)
+  address      String
+  dob          DateTime @db.Date
+  role_id      Int
+  password     String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  role         Role     @relation(fields: [role_id], references: [id])
+  sessions     UserSession[]
+  account      Account?
+  transactions Transaction[]
+
+  @@unique([username, email, phone_number])
+  @@map("users")
+}
+
+model UserSession {
+  id                    Int      @id @default(autoincrement())
+  user_id               Int
+  token                 String
+  refresh_token         String
+  token_expired         DateTime
+  refresh_token_expired DateTime
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  user                  User     @relation(fields: [user_id], references: [id])
+
+  @@unique([token, refresh_token])
+  @@map("user_sessions")
+}
+
+model Account {
+  id             Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  account_number String   @unique @db.VarChar(20)
+  balance        Decimal  @default(0.00) @db.Decimal(15, 2)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  deleted_at     DateTime?
+
+  user           User     @relation(fields: [user_id], references: [id])
+  transactions   AccountTransaction[]
+
+  @@unique([user_id, account_number])
+  @@map("accounts")
+}
+
+model AccountTransaction {
+  id                      Int                     @id @default(autoincrement())
+  account_id              Int
+  reference_id            String                  @db.VarChar(100)
+  amount                  Decimal                 @db.Decimal(15, 2)
+  account_transaction_type account_transaction_type
+  created_at              DateTime                @default(now())
+  updated_at              DateTime                @updatedAt
+
+  account                 Account                 @relation(fields: [account_id], references: [id])
+  transaction             Transaction?            @relation(fields: [reference_id], references: [reference_id])
+
+  @@index([account_id])
+  @@index([reference_id])
+  @@map("account_transactions")
+}
+
+model Transaction {
+  id                 Int                 @id @default(autoincrement())
+  user_id            Int
+  reference_id       String              @unique @db.VarChar(100)
+  amount             Decimal             @db.Decimal(15, 2)
+  transaction_type   transaction_type
+  transaction_status transaction_status  @default(PENDING)
+  description        String?             @db.VarChar(255)
+  additional_info    Json?
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+
+  user               User                @relation(fields: [user_id], references: [id])
+  account_transactions AccountTransaction[]
+
+  @@index([user_id])
+  @@map("transactions")
+}
