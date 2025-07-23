@@ -2,13 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { customAlphabet } from 'nanoid';
 
 @Injectable()
-export class ReferenceGenerator {
+export class RandomNumberGenerator {
   private numericId = customAlphabet('1234567890', 10);
 
-  generate(): string {
+  generateReference(): string {
     const now = this.timestamp();
     const randomNumber = this.numericId(5);
     return `${now}${randomNumber}`;
+  }
+
+  generateAccountNumber(): string {
+    const base = '10';
+    const randomNumber = this.numericId(8);
+    return `${base}${randomNumber}`;
   }
 
   private timestamp(): string {

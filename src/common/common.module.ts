@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ReferenceGenerator } from './utils/generate-reference';
-import { PasswordHash } from './utils/password-hash';
-import { JwtHelpers } from './utils/jwt-helpers';
 import { JwtService } from '@nestjs/jwt';
+import { RandomNumberGenerator } from './utils/generate-reference';
+import { JwtHelpers } from './utils/jwt-helpers';
+import { PasswordHash } from './utils/password-hash';
 
 @Module({
-  providers: [ReferenceGenerator, PasswordHash, JwtHelpers, JwtService],
-  exports: [ReferenceGenerator, PasswordHash, JwtHelpers],
+  providers: [RandomNumberGenerator, PasswordHash, JwtHelpers, JwtService],
+  exports: [RandomNumberGenerator, PasswordHash, JwtHelpers],
 })
 export class CommonModule {}
