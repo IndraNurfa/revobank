@@ -1,43 +1,11 @@
-import {
-  IsDateString,
-  IsEmail,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsNumber, IsString, Length } from 'class-validator';
+import { BaseUserDto } from './base-user.dto';
 
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  phone_number: string;
-
-  @IsString()
-  @IsNotEmpty()
-  full_name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  address: string;
-
-  @IsDateString()
-  @IsNotEmpty()
-  dob: Date;
-
+export class CreateUserDto extends BaseUserDto {
   @IsNumber()
-  @IsNotEmpty()
   role_id: number;
 
   @IsString()
-  @IsNotEmpty()
   @Length(6, 46)
   password: string;
 }

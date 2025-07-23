@@ -1,0 +1,55 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import * as bcrypt from 'bcrypt';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { SessionService } from 'src/session/session.service';
+import { TokenPayload } from '../types/auth';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    private configService: ConfigService,
+    private sessionService: SessionService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey:
+        configService.get<string>('JWT_SECRET') || 'super-secret-key',
+      passReqToCallback: true,
+    });
+  }
+
+  async validate(req: Request, payload: TokenPayload): Promise<TokenPayload> {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      throw new UnauthorizedException('Token not found');
+    }
+
+    const jti = payload.jti;
+
+    const session = await this.sessionService.findOne(jti);
+
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+
+    const isMatch = await bcrypt.compare(token, session.token);
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    // Remove password from user object before returning
+    return {
+      sub: payload.sub,
+      username: payload.username,
+      full_name: payload.full_name,
+      role: payload.role,
+      jti: payload.jti,
+    };
+  }
+}
