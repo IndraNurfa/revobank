@@ -79,6 +79,8 @@ export class ResponseGetUsersDto {
   dob: Date;
 
   @Expose()
-  @Transform(({ obj }) => obj.role?.name ?? null)
+  @Transform(
+    ({ obj }: { obj: { role?: { name?: string } } }) => obj.role?.name ?? null,
+  )
   role: string;
 }

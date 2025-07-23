@@ -29,7 +29,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Controller('auth')
-// @UseGuards(UsersGuard)
 export class AuthController {
   private logger = new Logger(AuthController.name);
   constructor(private authService: AuthService) {}

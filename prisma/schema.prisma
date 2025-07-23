@@ -34,14 +34,19 @@ enum transaction_status {
   REVERSED
 }
 
+enum AccountType {
+  SAVINGS
+  CHECKING
+}
+
 model Role {
-  id         Int     @id @default(autoincrement())
-  name       String  @unique
-  is_active  Boolean @default(true)
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  users      User[]
+  users User[]
 
   @@map("roles")
 }
@@ -59,9 +64,9 @@ model User {
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
-  role         Role     @relation(fields: [role_id], references: [id])
+  role         Role          @relation(fields: [role_id], references: [id])
   sessions     UserSession[]
-  account      Account?
+  account      Account[]
   transactions Transaction[]
 
   @@unique([username, email, phone_number])
@@ -71,7 +76,7 @@ model User {
 model UserSession {
   id                    Int      @id @default(autoincrement())
   user_id               Int
-  jti                   String    @unique @db.Uuid
+  jti                   String   @unique @db.Uuid
   token                 String
   refresh_token         String
   token_expired         DateTime
@@ -79,39 +84,41 @@ model UserSession {
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
-  user                  User     @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 
   @@unique([token, refresh_token])
   @@map("user_sessions")
 }
 
 model Account {
-  id             Int      @id @default(autoincrement())
-  user_id        Int      @unique
-  account_number String   @unique @db.VarChar(20)
-  balance        Decimal  @default(0.00) @db.Decimal(15, 2)
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id             Int         @id @default(autoincrement())
+  user_id        Int         
+  account_number String      @unique @db.VarChar(20)
+  account_name   String?     @db.VarChar(100)
+  account_type   AccountType @default(SAVINGS)
+  balance        Decimal     @default(0.00) @db.Decimal(15, 2)
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
   deleted_at     DateTime?
 
-  user           User     @relation(fields: [user_id], references: [id])
-  transactions   AccountTransaction[]
+  user         User                 @relation(fields: [user_id], references: [id])
+  transactions AccountTransaction[]
 
-  @@unique([user_id, account_number])
+  @@index([account_number])
   @@map("accounts")
 }
 
 model AccountTransaction {
-  id                      Int                     @id @default(autoincrement())
-  account_id              Int
-  reference_id            String                  @db.VarChar(100)
-  amount                  Decimal                 @db.Decimal(15, 2)
+  id                       Int                      @id @default(autoincrement())
+  account_id               Int
+  reference_id             String                   @db.VarChar(100)
+  amount                   Decimal                  @db.Decimal(15, 2)
   account_transaction_type account_transaction_type
-  created_at              DateTime                @default(now())
-  updated_at              DateTime                @updatedAt
+  created_at               DateTime                 @default(now())
+  updated_at               DateTime                 @updatedAt
 
-  account                 Account                 @relation(fields: [account_id], references: [id])
-  transaction             Transaction?            @relation(fields: [reference_id], references: [reference_id])
+  account     Account      @relation(fields: [account_id], references: [id])
+  transaction Transaction? @relation(fields: [reference_id], references: [reference_id])
 
   @@index([account_id])
   @@index([reference_id])
@@ -119,18 +126,18 @@ model AccountTransaction {
 }
 
 model Transaction {
-  id                 Int                 @id @default(autoincrement())
+  id                 Int                @id @default(autoincrement())
   user_id            Int
-  reference_id       String              @unique @db.VarChar(100)
-  amount             Decimal             @db.Decimal(15, 2)
+  reference_id       String             @unique @db.VarChar(100)
+  amount             Decimal            @db.Decimal(15, 2)
   transaction_type   transaction_type
-  transaction_status transaction_status  @default(PENDING)
-  description        String?             @db.VarChar(255)
+  transaction_status transaction_status @default(PENDING)
+  description        String?            @db.VarChar(255)
   additional_info    Json?
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
 
-  user               User                @relation(fields: [user_id], references: [id])
+  user                 User                 @relation(fields: [user_id], references: [id])
   account_transactions AccountTransaction[]
 
   @@index([user_id])
