@@ -71,3 +71,9 @@ export class ResponseLoginDto {
   @Type(() => String)
   refresh_token: string;
 }
+
+export class ResponseRefreshTokenDto {
+  @Expose()
+  @Type(() => String)
+  access_token: string;
+}

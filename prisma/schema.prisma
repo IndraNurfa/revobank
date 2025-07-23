@@ -71,6 +71,7 @@ model User {
 model UserSession {
   id                    Int      @id @default(autoincrement())
   user_id               Int
+  jti                   String    @unique @db.Uuid
   token                 String
   refresh_token         String
   token_expired         DateTime

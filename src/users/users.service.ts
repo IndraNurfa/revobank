@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseRegisterDto } from './dto/resp-user.dto';
 import { UserRepository } from './users.repository';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,12 @@ export class UsersService {
   }
 
   async findByUsername(username: string) {
-    return await this.userRepo.findByUsername(username);
+    const data = await this.userRepo.findByUsername(username);
+    console.log('data', data);
+    return data;
+  }
+
+  async update(id: number, data: UpdateUserDto) {
+    await this.userRepo.update(id, data);
   }
 }

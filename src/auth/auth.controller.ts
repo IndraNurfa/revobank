@@ -3,13 +3,13 @@ import {
   Body,
   ConflictException,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   InternalServerErrorException,
   Logger,
   NotFoundException,
   Post,
+  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,12 +17,19 @@ import { Prisma } from '@prisma/client';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
-import { ResponseLoginDto, ResponseRegisterDto } from './dto/resp-auth.dto';
-import { Roles } from 'src/core/decorator/roles.decorator';
-import { RolesGuard } from './roles.guard';
+import {
+  ResponseLoginDto,
+  ResponseRefreshTokenDto,
+  ResponseRegisterDto,
+} from './dto/resp-auth.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { TokenPayload } from './types/auth';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Controller('auth')
-@UseGuards(RolesGuard)
+// @UseGuards(UsersGuard)
 export class AuthController {
   private logger = new Logger(AuthController.name);
   constructor(private authService: AuthService) {}
@@ -70,10 +77,21 @@ export class AuthController {
     }
   }
 
-  // example get role guards
-  @Roles('USER')
-  @Get()
-  check() {
-    return 'good job!';
+  @UseInterceptors(new SerializationInterceptor(ResponseRefreshTokenDto))
+  @UseGuards(JwtRefreshGuard)
+  @Put('/refresh-token')
+  getFullPayload(@CurrentUser() user: TokenPayload) {
+    try {
+      return this.authService.refreshToken(user);
+    } catch (error) {
+      this.logger.error('Login failed', error);
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException('username or password is invalid.');
+        }
+      }
+      throw new InternalServerErrorException('something wrong on our side');
+    }
   }
 }

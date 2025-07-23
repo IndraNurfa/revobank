@@ -44,3 +44,41 @@ export class ResponseRegisterDto {
   @Type(() => Date)
   updated_at: Date;
 }
+
+export class ResponseGetUsersDto {
+  @Expose()
+  @Type(() => Number)
+  id: number;
+
+  @Expose()
+  @Type(() => String)
+  username: string;
+
+  @Expose()
+  @Type(() => String)
+  email: string;
+
+  @Expose()
+  @Type(() => String)
+  phone_number: string;
+
+  @Expose()
+  @Type(() => String)
+  full_name: string;
+
+  @Expose()
+  @Type(() => String)
+  address: string;
+
+  @Expose()
+  @Transform(({ value }) => {
+    // Ensure it's a Date object before formatting
+    const date = new Date(value as string);
+    return date.toISOString().split('T')[0]; // returns "YYYY-MM-DD"
+  })
+  dob: Date;
+
+  @Expose()
+  @Transform(({ obj }) => obj.role?.name ?? null)
+  role: string;
+}

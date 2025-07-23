@@ -4,17 +4,20 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { CatsModule } from './cats/cats.module';
 import { CoreModule } from './core/core.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UsersModule } from './users/users.module';
+import { SessionService } from './session/session.service';
+import { SessionModule } from './session/session.module';
+import { AccountsModule } from './accounts/accounts.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
     PrismaModule,
     CoreModule,
-    CatsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -28,8 +31,12 @@ import { UsersModule } from './users/users.module';
     }),
     UsersModule,
     AuthModule,
+    SessionModule,
+    AccountsModule,
+    TransactionsModule,
+    CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService, PrismaService, SessionService],
 })
 export class AppModule {}

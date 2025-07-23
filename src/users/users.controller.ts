@@ -1,18 +1,36 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TokenPayload } from 'src/auth/types/auth';
+import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ResponseGetUsersDto } from './dto/resp-user.dto';
 import { UsersService } from './users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('registers')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @UseInterceptors(new SerializationInterceptor(ResponseGetUsersDto))
+  @Get('profile')
+  findOne(@CurrentUser() user: TokenPayload) {
+    const { username } = user;
+    return this.usersService.findByUsername(username);
   }
 
-  // @Get('profiles/:id')
-  // findOne(@Param('id') id: number) {
-  //   return this.usersService.findOne(id);
-  // }
+  // PATCH /user/profile: Update user profile
+  @Patch('profile')
+  updateOne(@CurrentUser() user: TokenPayload, @Body() dto: UpdateUserDto) {
+    const { sub } = user;
+    console.log(dto);
+    return this.usersService.update(sub, dto);
+  }
 }
