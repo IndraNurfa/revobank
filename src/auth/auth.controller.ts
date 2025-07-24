@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   ConflictException,
@@ -17,6 +16,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import {
   ResponseLoginDto,
@@ -24,10 +24,8 @@ import {
   ResponseRegisterDto,
 } from './dto/resp-auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { CurrentUser } from './decorators/current-user.decorator';
-import { TokenPayload } from './types/auth';
-import { AuthGuard } from '@nestjs/passport';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { TokenPayload } from './types/auth';
 
 @Controller('auth')
 export class AuthController {

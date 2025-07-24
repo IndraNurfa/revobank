@@ -33,7 +33,10 @@ export class AccountsService {
   }
 
   async update(id: string, sub: number, dto: UpdateAccountDto) {
-    await this.findByAccountNumber(id);
+    const existingAccount = await this.findByAccountNumber(id);
+    if (existingAccount && existingAccount.user_id !== sub) {
+      throw new BadRequestException('Account for this users not found');
+    }
     return await this.accountRepo.updateAccount(id, sub, dto);
   }
 
