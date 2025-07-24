@@ -1,12 +1,10 @@
 import {
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
-  InternalServerErrorException,
   Logger,
   Param,
   Patch,
@@ -14,7 +12,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -38,21 +35,8 @@ export class AccountsController {
     @CurrentUser() user: TokenPayload,
     @Body() dto: CreateAccountDto,
   ) {
-    try {
-      const { sub } = user;
-      return await this.accountsService.create(sub, dto);
-    } catch (error) {
-      this.logger.error('create account failed', error);
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException(
-            `An account already exists for this user.`,
-          );
-        }
-        this.logger.error('Unhandled Prisma error', error.code, error.meta);
-      }
-      throw new InternalServerErrorException('something wrong on our side');
-    }
+    const { sub } = user;
+    return await this.accountsService.create(sub, dto);
   }
 
   @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
@@ -68,8 +52,13 @@ export class AccountsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.accountsService.update(id, updateAccountDto);
+  update(
+    @Param('id') id: string,
+    @CurrentUser() user: TokenPayload,
+    @Body() updateAccountDto: UpdateAccountDto,
+  ) {
+    const { sub } = user;
+    return this.accountsService.update(id, sub, updateAccountDto);
   }
 
   @Roles('admin')

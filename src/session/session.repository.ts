@@ -7,12 +7,6 @@ export class SessionRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(data: SessionType) {
-    // user_id               Int
-    // jti                   String    @unique @db.Uuid
-    // token                 String
-    // refresh_token         String
-    // token_expired         DateTime
-    // refresh_token_expired DateTime
     return await this.prisma.userSession.create({
       data,
     });
@@ -20,16 +14,25 @@ export class SessionRepository {
 
   async findOne(jti: string) {
     return await this.prisma.userSession.findUnique({
-      where: { jti },
+      where: { jti, revoked_at: null },
     });
   }
 
   async updateToken(jti: string, token: string) {
     return await this.prisma.userSession.update({
-      where: { jti },
+      where: { jti, revoked_at: null },
       data: {
         token,
         token_expired: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+  }
+
+  async revokeToken(jti: string) {
+    return await this.prisma.userSession.update({
+      where: { jti, revoked_at: null },
+      data: {
+        revoked_at: new Date(),
       },
     });
   }

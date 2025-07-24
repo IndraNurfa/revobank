@@ -3,15 +3,14 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { JwtHelpers } from 'src/common/utils/jwt-helpers';
 import { SessionService } from 'src/session/session.service';
 import { UsersService } from '../users/users.service';
 import { jwtConstants } from './constant/constant';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import { ResponseLoginDto, ResponseRegisterDto } from './dto/resp-auth.dto';
-import { JwtHelpers } from 'src/common/utils/jwt-helpers';
 import { TokenPayload } from './types/auth';
 
 @Injectable()
@@ -115,5 +114,9 @@ export class AuthService {
     }
 
     return access_token;
+  }
+
+  async revokeToken(jti: string) {
+    return await this.sessionService.revokeToken(jti);
   }
 }

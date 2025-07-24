@@ -74,15 +74,16 @@ model User {
 }
 
 model UserSession {
-  id                    Int      @id @default(autoincrement())
+  id                    Int       @id @default(autoincrement())
   user_id               Int
-  jti                   String   @unique @db.Uuid
+  jti                   String    @unique @db.Uuid
   token                 String
   refresh_token         String
   token_expired         DateTime
   refresh_token_expired DateTime
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  revoked_at            DateTime?
 
   user User @relation(fields: [user_id], references: [id])
 
@@ -92,7 +93,7 @@ model UserSession {
 
 model Account {
   id             Int         @id @default(autoincrement())
-  user_id        Int         
+  user_id        Int
   account_number String      @unique @db.VarChar(20)
   account_name   String?     @db.VarChar(100)
   account_type   AccountType @default(SAVINGS)
