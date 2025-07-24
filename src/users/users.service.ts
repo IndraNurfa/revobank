@@ -14,7 +14,6 @@ export class UsersService {
 
   async findByUsername(username: string) {
     const data = await this.userRepo.findByUsername(username);
-    console.log('data', data);
     return data;
   }
 

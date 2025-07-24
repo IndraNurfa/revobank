@@ -94,7 +94,6 @@ export class AuthService {
 
   async refreshToken(data: TokenPayload) {
     const { sub, username, full_name, role, jti } = data;
-    console.log(data);
 
     const access_token = await this.JwtHelpers.generate(
       sub,

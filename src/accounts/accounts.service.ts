@@ -22,9 +22,11 @@ export class AccountsService {
 
   async findByAccountNumber(id: string) {
     const data = await this.accountRepo.findByAccountNumber(id);
+
     if (data === null) {
       throw new NotFoundException('account not found');
     }
+
     return data;
   }
 
@@ -32,16 +34,23 @@ export class AccountsService {
     return await this.accountRepo.findByUserId(user_id);
   }
 
+  async findAll() {
+    return await this.accountRepo.findAll();
+  }
+
   async update(id: string, sub: number, dto: UpdateAccountDto) {
     const existingAccount = await this.findByAccountNumber(id);
+
     if (existingAccount && existingAccount.user_id !== sub) {
       throw new BadRequestException('Account for this users not found');
     }
+
     return await this.accountRepo.updateAccount(id, sub, dto);
   }
 
   async remove(id: string) {
     const existingAccount = await this.findByAccountNumber(id);
+
     if (existingAccount && existingAccount.balance.toNumber() > 0) {
       throw new BadRequestException('Account balance must be 0');
     }
