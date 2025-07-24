@@ -77,7 +77,7 @@ export class AuthController {
 
   @UseInterceptors(new SerializationInterceptor(ResponseRefreshTokenDto))
   @UseGuards(JwtRefreshGuard)
-  @Put('/refresh-token')
+  @Put('refresh-token')
   getFullPayload(@CurrentUser() user: TokenPayload) {
     try {
       return this.authService.refreshToken(user);
@@ -95,7 +95,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete('/logout')
+  @Delete('logout')
   revokeToken(@CurrentUser() user: TokenPayload) {
     try {
       const { jti } = user;

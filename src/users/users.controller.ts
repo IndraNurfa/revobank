@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Patch,
   UseGuards,
   UseInterceptors,
@@ -17,20 +18,29 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
+  private logger = new Logger(UsersController.name);
+
   constructor(private readonly usersService: UsersService) {}
 
   @UseInterceptors(new SerializationInterceptor(ResponseGetUsersDto))
   @Get('profile')
   findOne(@CurrentUser() user: TokenPayload) {
-    const { username } = user;
-    return this.usersService.findByUsername(username);
+    try {
+      const { username } = user;
+      return this.usersService.findByUsername(username);
+    } catch (error) {
+      this.logger.error('get profile failed', error);
+    }
   }
 
   // PATCH /user/profile: Update user profile
   @Patch('profile')
   updateOne(@CurrentUser() user: TokenPayload, @Body() dto: UpdateUserDto) {
-    const { sub } = user;
-    console.log(dto);
-    return this.usersService.update(sub, dto);
+    try {
+      const { sub } = user;
+      return this.usersService.update(sub, dto);
+    } catch (error) {
+      this.logger.error('update profile failed', error);
+    }
   }
 }

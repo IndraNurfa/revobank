@@ -1,6 +1,6 @@
 import { Expose, Transform, Type } from 'class-transformer';
 
-export class ResponseAccountDto {
+export class ResponseBaseDto {
   @Expose()
   @Transform(
     ({ obj }: { obj: { user?: { full_name?: string } } }) =>
@@ -14,6 +14,12 @@ export class ResponseAccountDto {
   @Type(() => String)
   account_number: string;
 
+  created_at: Date;
+
+  updated_at: Date;
+}
+
+export class ResponseAccountDto extends ResponseBaseDto {
   @Expose()
   @Type(() => String)
   account_name: string;
@@ -25,8 +31,4 @@ export class ResponseAccountDto {
   @Expose()
   @Type(() => String)
   balance: string;
-
-  created_at: Date;
-
-  updated_at: Date;
 }

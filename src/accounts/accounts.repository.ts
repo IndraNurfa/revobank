@@ -40,6 +40,15 @@ export class AccountRepository {
     });
   }
 
+  async findAll() {
+    return await this.prisma.account.findMany({
+      where: { deleted_at: null },
+      include: {
+        user: true,
+      },
+    });
+  }
+
   async updateAccount(
     account_number: string,
     user_id: number,
