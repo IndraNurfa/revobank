@@ -3,6 +3,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   InternalServerErrorException,
@@ -83,13 +84,26 @@ export class AuthController {
     try {
       return this.authService.refreshToken(user);
     } catch (error) {
-      this.logger.error('Login failed', error);
+      this.logger.error('create refresh token failed', error);
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
-          throw new NotFoundException('username or password is invalid.');
+          throw new NotFoundException('refresh token is invalid.');
         }
       }
+      throw new InternalServerErrorException('something wrong on our side');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/logout')
+  revokeToken(@CurrentUser() user: TokenPayload) {
+    try {
+      const { jti } = user;
+      return this.authService.revokeToken(jti);
+    } catch (error) {
+      this.logger.error('logout failed', error);
       throw new InternalServerErrorException('something wrong on our side');
     }
   }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RandomNumberGenerator } from 'src/common/utils/generate-reference';
 import { AccountRepository } from './accounts.repository';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -28,12 +32,17 @@ export class AccountsService {
     return await this.accountRepo.findByUserId(user_id);
   }
 
-  update(id: string, dto: UpdateAccountDto) {
-    return `This action updates a #${id} account.`;
+  async update(id: string, sub: number, dto: UpdateAccountDto) {
+    await this.findByAccountNumber(id);
+    return await this.accountRepo.updateAccount(id, sub, dto);
   }
 
   async remove(id: string) {
-    await this.findByAccountNumber(id);
+    const existingAccount = await this.findByAccountNumber(id);
+    if (existingAccount && existingAccount.balance.toNumber() > 0) {
+      throw new BadRequestException('Account balance must be 0');
+    }
+
     return await this.accountRepo.deleteAccount(id);
   }
 }

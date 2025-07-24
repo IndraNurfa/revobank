@@ -17,4 +17,8 @@ export class SessionService {
   async updateToken(jti: string, token: string) {
     return await this.sessionRepo.updateToken(jti, token);
   }
+
+  async revokeToken(jti: string) {
+    return await this.sessionRepo.revokeToken(jti);
+  }
 }
