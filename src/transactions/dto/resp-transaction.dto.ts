@@ -40,9 +40,21 @@ export class DetailTransactionResponseDto extends BaseTransactionResponseDto {
   @IsString()
   @Expose({ name: 'receiver_account' })
   @Transform(
-    ({ obj }) =>
+    ({
+      obj,
+    }: {
+      obj: {
+        account_transactions?: Array<{
+          account_transaction_type: string;
+          account?: { account_number?: string };
+        }>;
+      };
+    }) =>
       obj.account_transactions?.find(
-        (at: any) => at.account_transaction_type === 'CREDIT',
+        (at: {
+          account_transaction_type: string;
+          account?: { account_number?: string };
+        }) => at.account_transaction_type === 'CREDIT',
       )?.account?.account_number ?? '',
     { toClassOnly: true },
   )
@@ -51,9 +63,25 @@ export class DetailTransactionResponseDto extends BaseTransactionResponseDto {
   @IsString()
   @Expose({ name: 'receiver_account_name' })
   @Transform(
-    ({ obj }) =>
+    ({
+      obj,
+    }: {
+      obj: {
+        account_transactions?: Array<{
+          account_transaction_type: string;
+          account?: {
+            account_name?: string;
+          };
+        }>;
+      };
+    }) =>
       obj.account_transactions?.find(
-        (at: any) => at.account_transaction_type === 'CREDIT',
+        (at: {
+          account_transaction_type: string;
+          account?: {
+            account_name?: string;
+          };
+        }) => at.account_transaction_type === 'CREDIT',
       )?.account?.account_name ?? '',
     { toClassOnly: true },
   )
@@ -62,10 +90,26 @@ export class DetailTransactionResponseDto extends BaseTransactionResponseDto {
   @IsString()
   @Expose({ name: 'sender_account' })
   @Transform(
-    ({ obj }) =>
+    ({
+      obj,
+    }: {
+      obj: {
+        account_transactions?: Array<{
+          account_transaction_type: string;
+          account?: {
+            account_name?: string;
+          };
+        }>;
+      };
+    }) =>
       obj.account_transactions?.find(
-        (at: any) => at.account_transaction_type === 'DEBIT',
-      )?.account?.account_number ?? '',
+        (at: {
+          account_transaction_type: string;
+          account?: {
+            account_name?: string;
+          };
+        }) => at.account_transaction_type === 'DEBIT',
+      )?.account?.account_name ?? '',
     { toClassOnly: true },
   )
   sender_account: string;
@@ -73,10 +117,22 @@ export class DetailTransactionResponseDto extends BaseTransactionResponseDto {
   @IsString()
   @Expose({ name: 'sender_account_name' })
   @Transform(
-    ({ obj }) =>
+    ({
+      obj,
+    }: {
+      obj: {
+        account_transactions?: Array<{
+          account_transaction_type: string;
+          account?: { account_number?: string };
+        }>;
+      };
+    }) =>
       obj.account_transactions?.find(
-        (at: any) => at.account_transaction_type === 'DEBIT',
-      )?.account?.account_name ?? '',
+        (at: {
+          account_transaction_type: string;
+          account?: { account_number?: string };
+        }) => at.account_transaction_type === 'DEBIT',
+      )?.account?.account_number ?? '',
     { toClassOnly: true },
   )
   sender_account_name: string;

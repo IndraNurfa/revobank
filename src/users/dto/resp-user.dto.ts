@@ -46,8 +46,6 @@ export class ResponseRegisterDto {
 }
 
 export class ResponseGetUsersDto {
-  @Expose()
-  @Type(() => Number)
   id: number;
 
   @Expose()

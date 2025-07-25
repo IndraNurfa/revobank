@@ -75,7 +75,6 @@ export class AccountRepository {
     account_number: string,
     amount: Prisma.Decimal | number,
   ) {
-    console.log('update balance :', new Date());
     return await tx.account.update({
       where: { account_number, deleted_at: null },
       data: {
