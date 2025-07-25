@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { AccountType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { AccountType } from '@prisma/client';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @Injectable()
@@ -67,6 +67,22 @@ export class AccountRepository {
     return await this.prisma.account.update({
       where: { account_number },
       data: { deleted_at: new Date() },
+    });
+  }
+
+  async updateBalance(
+    tx: Prisma.TransactionClient,
+    account_number: string,
+    amount: Prisma.Decimal | number,
+  ) {
+    console.log('update balance :', new Date());
+    return await tx.account.update({
+      where: { account_number, deleted_at: null },
+      data: {
+        balance: {
+          increment: amount,
+        },
+      },
     });
   }
 }
