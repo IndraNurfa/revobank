@@ -1,17 +1,20 @@
 import { Expose, Transform, Type } from 'class-transformer';
 
-export class ResponseBaseDto {
+export class BaseAccountResponseDto {
   @Expose()
   @Transform(
-    ({ obj }: { obj: { user?: { full_name?: string } } }) =>
-      obj.user?.full_name ?? null,
+    ({ obj }: { obj: { account_number?: string } }) => obj.account_number ?? '',
+    { toClassOnly: true },
   )
   full_name!: string | null;
 
   user_id: number;
 
   @Expose()
-  @Type(() => String)
+  @Transform(
+    ({ obj }: { obj: { account_name?: string } }) => obj.account_name ?? '',
+    { toClassOnly: true },
+  )
   account_number: string;
 
   created_at: Date;
@@ -19,7 +22,7 @@ export class ResponseBaseDto {
   updated_at: Date;
 }
 
-export class ResponseAccountDto extends ResponseBaseDto {
+export class ResponseAccountDto extends BaseAccountResponseDto {
   @Expose()
   @Type(() => String)
   account_name: string;

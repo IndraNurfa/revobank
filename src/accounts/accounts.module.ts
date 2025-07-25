@@ -9,5 +9,6 @@ import { AccountRepository } from './accounts.repository';
   imports: [CommonModule],
   controllers: [AccountsController],
   providers: [AccountsService, JwtService, AccountRepository],
+  exports: [AccountsService, AccountRepository],
 })
 export class AccountsModule {}

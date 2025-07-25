@@ -20,7 +20,10 @@ import { TokenPayload } from 'src/auth/types/auth';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { ResponseAccountDto, ResponseBaseDto } from './dto/resp-account.dto';
+import {
+  ResponseAccountDto,
+  BaseAccountResponseDto,
+} from './dto/resp-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,7 +33,7 @@ export class AccountsController {
 
   constructor(private readonly accountsService: AccountsService) {}
 
-  @UseInterceptors(new SerializationInterceptor(ResponseBaseDto))
+  @UseInterceptors(new SerializationInterceptor(BaseAccountResponseDto))
   @Get(':id')
   findByAccountNumber(@Param('id') id: string) {
     try {

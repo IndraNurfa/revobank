@@ -16,7 +16,7 @@ export class JwtHelpers {
     const payload = { sub: id, username, full_name, role };
 
     const token = this.jwtService.signAsync(payload, {
-      secret: process.env.APP_SECRET,
+      secret: process.env.JWT_SECRET,
       jwtid: uuid,
       expiresIn: expires,
     });
