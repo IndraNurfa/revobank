@@ -22,16 +22,16 @@ export class BaseTransactionResponseDto {
   @Expose()
   @Type(() => String)
   transaction_status: string;
+
+  @Expose()
+  @Type(() => String)
+  created_at: Date;
 }
 
 export class DetailTransactionResponseDto extends BaseTransactionResponseDto {
   @Expose()
   @Type(() => String)
   description: string;
-
-  @Expose()
-  @Type(() => String)
-  created_at: Date;
 
   @Expose()
   @Type(() => TransactionAdditionalInfoDto)

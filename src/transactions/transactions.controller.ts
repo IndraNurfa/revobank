@@ -30,6 +30,7 @@ export class TransactionsController {
 
   constructor(private readonly transactionsService: TransactionsService) {}
 
+  @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('deposit')
   deposit(
     @CurrentUser() user: TokenPayload,
@@ -44,6 +45,7 @@ export class TransactionsController {
     }
   }
 
+  @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('withdraw')
   withdraw(
     @CurrentUser() user: TokenPayload,
@@ -57,6 +59,7 @@ export class TransactionsController {
     }
   }
 
+  @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('transfer')
   transfer(
     @CurrentUser() user: TokenPayload,
