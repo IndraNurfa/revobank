@@ -71,10 +71,12 @@ export class TransactionsRepository {
         this.accountRepo.updateBalance(tx, data.receiver_account, data.amount),
       ]);
 
-      await tx.transaction.update({
+      const updated = await tx.transaction.update({
         where: { reference_id },
         data: { transaction_status: 'SUCCESS' },
       });
+
+      return updated;
     });
   }
 
@@ -106,10 +108,12 @@ export class TransactionsRepository {
         this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
       ]);
 
-      await tx.transaction.update({
+      const updated = await tx.transaction.update({
         where: { reference_id },
         data: { transaction_status: 'SUCCESS' },
       });
+
+      return updated;
     });
   }
 
@@ -138,22 +142,24 @@ export class TransactionsRepository {
         },
       });
 
-      //remove balance from sender account
+      // remove balance from sender account
       await Promise.all([
         this.debit(tx, sender_account_id, reference_id, data.amount),
         this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
       ]);
 
-      //increase balance to receiver account
+      // increase balance to receiver account
       await Promise.all([
         this.credit(tx, receiver_account_id, reference_id, data.amount),
         this.accountRepo.updateBalance(tx, data.receiver_account, data.amount),
       ]);
 
-      await tx.transaction.update({
+      const updated = await tx.transaction.update({
         where: { reference_id },
         data: { transaction_status: 'SUCCESS' },
       });
+
+      return updated;
     });
   }
 
