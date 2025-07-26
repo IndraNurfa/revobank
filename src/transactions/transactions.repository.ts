@@ -53,37 +53,29 @@ export class TransactionsRepository {
       additional_info?: Prisma.InputJsonValue;
     },
   ) {
-    return this.prisma
-      .$transaction(async (tx) => {
-        await tx.transaction.create({
-          data: {
-            account_id,
-            reference_id,
-            amount: data.amount,
-            transaction_type: 'TOPUP',
-            description: data.description,
-            additional_info: data.additional_info ?? {},
-          },
-        });
-
-        await Promise.all([
-          this.credit(tx, account_id, reference_id, data.amount),
-          this.accountRepo.updateBalance(
-            tx,
-            data.receiver_account,
-            data.amount,
-          ),
-        ]);
-
-        await tx.transaction.update({
-          where: { reference_id },
-          data: { transaction_status: 'SUCCESS' },
-        });
-      })
-      .catch((err) => {
-        this.logger.error('deposit failed', err);
-        throw err;
+    return this.prisma.$transaction(async (tx) => {
+      await tx.transaction.create({
+        data: {
+          account_id,
+          reference_id,
+          amount: data.amount,
+          transaction_type: 'TOPUP',
+          transaction_status: 'PENDING',
+          description: data.description,
+          additional_info: data.additional_info ?? {},
+        },
       });
+
+      await Promise.all([
+        this.credit(tx, account_id, reference_id, data.amount),
+        this.accountRepo.updateBalance(tx, data.receiver_account, data.amount),
+      ]);
+
+      await tx.transaction.update({
+        where: { reference_id },
+        data: { transaction_status: 'SUCCESS' },
+      });
+    });
   }
 
   async withdraw(
@@ -96,33 +88,29 @@ export class TransactionsRepository {
       additional_info?: Prisma.InputJsonValue;
     },
   ) {
-    return this.prisma
-      .$transaction(async (tx) => {
-        await tx.transaction.create({
-          data: {
-            account_id,
-            reference_id,
-            amount: data.amount,
-            transaction_type: 'WITHDRAWAL',
-            description: data.description,
-            additional_info: data.additional_info ?? {},
-          },
-        });
-
-        await Promise.all([
-          this.debit(tx, account_id, reference_id, data.amount),
-          this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
-        ]);
-
-        await tx.transaction.update({
-          where: { reference_id },
-          data: { transaction_status: 'SUCCESS' },
-        });
-      })
-      .catch((err) => {
-        this.logger.error('withdraw failed', err);
-        throw err; // rethrow or handle gracefully
+    return this.prisma.$transaction(async (tx) => {
+      await tx.transaction.create({
+        data: {
+          account_id,
+          reference_id,
+          amount: data.amount,
+          transaction_type: 'WITHDRAWAL',
+          transaction_status: 'PENDING',
+          description: data.description,
+          additional_info: data.additional_info ?? {},
+        },
       });
+
+      await Promise.all([
+        this.debit(tx, account_id, reference_id, data.amount),
+        this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
+      ]);
+
+      await tx.transaction.update({
+        where: { reference_id },
+        data: { transaction_status: 'SUCCESS' },
+      });
+    });
   }
 
   async transfer(
@@ -137,44 +125,36 @@ export class TransactionsRepository {
       additional_info?: Prisma.InputJsonValue;
     },
   ) {
-    return this.prisma
-      .$transaction(async (tx) => {
-        await tx.transaction.create({
-          data: {
-            account_id: sender_account_id,
-            reference_id,
-            amount: data.amount,
-            transaction_type: 'TRANSFER',
-            description: data.description,
-            additional_info: data.additional_info ?? {},
-          },
-        });
-
-        //remove balance from sender account
-        await Promise.all([
-          this.debit(tx, sender_account_id, reference_id, data.amount),
-          this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
-        ]);
-
-        //increase balance to receiver account
-        await Promise.all([
-          this.credit(tx, receiver_account_id, reference_id, data.amount),
-          this.accountRepo.updateBalance(
-            tx,
-            data.receiver_account,
-            data.amount,
-          ),
-        ]);
-
-        await tx.transaction.update({
-          where: { reference_id },
-          data: { transaction_status: 'SUCCESS' },
-        });
-      })
-      .catch((err) => {
-        this.logger.error('Transaction failed', err);
-        throw err; // rethrow or handle gracefully
+    return this.prisma.$transaction(async (tx) => {
+      await tx.transaction.create({
+        data: {
+          account_id: sender_account_id,
+          reference_id,
+          amount: data.amount,
+          transaction_type: 'TRANSFER',
+          transaction_status: 'PENDING',
+          description: data.description,
+          additional_info: data.additional_info ?? {},
+        },
       });
+
+      //remove balance from sender account
+      await Promise.all([
+        this.debit(tx, sender_account_id, reference_id, data.amount),
+        this.accountRepo.updateBalance(tx, data.sender_account, -data.amount),
+      ]);
+
+      //increase balance to receiver account
+      await Promise.all([
+        this.credit(tx, receiver_account_id, reference_id, data.amount),
+        this.accountRepo.updateBalance(tx, data.receiver_account, data.amount),
+      ]);
+
+      await tx.transaction.update({
+        where: { reference_id },
+        data: { transaction_status: 'SUCCESS' },
+      });
+    });
   }
 
   async findOne(reference_id: string) {

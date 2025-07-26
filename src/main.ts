@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -21,6 +22,20 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const config = new DocumentBuilder()
+    .setTitle('Banking API')
+    .setDescription('API for managing users, accounts, and transactions')
+    .setVersion('1.0')
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management endpoints')
+    .addTag('accounts', 'Account management endpoints')
+    .addTag('transactions', 'Transaction management endpoints')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

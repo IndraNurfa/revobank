@@ -58,7 +58,7 @@ export class AccountsController {
   }
 
   @Roles('admin')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     try {
