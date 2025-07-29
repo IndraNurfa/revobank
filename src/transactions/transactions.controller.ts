@@ -8,6 +8,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+} from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TokenPayload } from 'src/auth/types/auth';
@@ -32,6 +38,12 @@ export class TransactionsController {
 
   @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('deposit')
+  @ApiOperation({ summary: 'Create a deposit transaction' })
+  @ApiBody({ type: DepositTransactionDto })
+  @ApiOkResponse({
+    description: 'Deposit transaction created successfully',
+    type: BaseTransactionResponseDto,
+  })
   deposit(
     @CurrentUser() user: TokenPayload,
     @Body() dto: DepositTransactionDto,
@@ -47,6 +59,12 @@ export class TransactionsController {
 
   @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('withdraw')
+  @ApiOperation({ summary: 'Create a withdrawal transaction' })
+  @ApiBody({ type: WithdrawTransactionDto })
+  @ApiOkResponse({
+    description: 'Withdrawal transaction created successfully',
+    type: BaseTransactionResponseDto,
+  })
   withdraw(
     @CurrentUser() user: TokenPayload,
     @Body() dto: WithdrawTransactionDto,
@@ -61,6 +79,12 @@ export class TransactionsController {
 
   @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('transfer')
+  @ApiOperation({ summary: 'Create a transfer transaction' })
+  @ApiBody({ type: TransferTransactionDto })
+  @ApiOkResponse({
+    description: 'Transfer transaction created successfully',
+    type: BaseTransactionResponseDto,
+  })
   transfer(
     @CurrentUser() user: TokenPayload,
     @Body() dto: TransferTransactionDto,
@@ -75,6 +99,12 @@ export class TransactionsController {
 
   @UseInterceptors(new SerializationInterceptor(DetailTransactionResponseDto))
   @Get(':id')
+  @ApiOperation({ summary: 'Get transaction details by ID' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({
+    description: 'Transaction detail returned successfully',
+    type: DetailTransactionResponseDto,
+  })
   findOne(@CurrentUser() user: TokenPayload, @Param('id') id: string) {
     try {
       return this.transactionsService.findOne(id);
@@ -85,6 +115,11 @@ export class TransactionsController {
 
   @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Get()
+  @ApiOperation({ summary: "Get all transactions (admin) or user's own" })
+  @ApiOkResponse({
+    description: 'List of transactions returned successfully',
+    type: [BaseTransactionResponseDto],
+  })
   findAll(@CurrentUser() user: TokenPayload) {
     try {
       const { sub, role } = user;

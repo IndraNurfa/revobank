@@ -22,8 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, payload: TokenPayload): Promise<TokenPayload> {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
+    const authHeader = req.headers['authorization'] as string;
+    const token =
+      typeof authHeader === 'string' ? authHeader.split(' ')[1] : undefined;
 
     if (!token) {
       throw new UnauthorizedException('Token not found');

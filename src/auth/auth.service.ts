@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { UserSession } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { JwtHelpers } from 'src/common/utils/jwt-helpers';
@@ -92,7 +93,7 @@ export class AuthService {
     };
   }
 
-  async refreshToken(data: TokenPayload) {
+  async refreshToken(data: TokenPayload): Promise<string> {
     const { sub, username, full_name, role, jti } = data;
 
     const access_token = await this.JwtHelpers.generate(
@@ -115,7 +116,7 @@ export class AuthService {
     return access_token;
   }
 
-  async revokeToken(jti: string) {
+  async revokeToken(jti: string): Promise<UserSession> {
     return await this.sessionService.revokeToken(jti);
   }
 }

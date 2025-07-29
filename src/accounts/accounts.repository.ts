@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AccountType, Prisma } from '@prisma/client';
+import { Account, AccountType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -31,7 +31,7 @@ export class AccountRepository {
     });
   }
 
-  async findByUserId(user_id: number) {
+  async findByUserId(user_id: number): Promise<Account[]> {
     return await this.prisma.account.findMany({
       where: { user_id, deleted_at: null },
       include: {
@@ -40,7 +40,7 @@ export class AccountRepository {
     });
   }
 
-  async findAll() {
+  async findAll(): Promise<Account[]> {
     return await this.prisma.account.findMany({
       where: { deleted_at: null },
       include: {
@@ -53,7 +53,7 @@ export class AccountRepository {
     account_number: string,
     user_id: number,
     dto: UpdateAccountDto,
-  ) {
+  ): Promise<Account> {
     return await this.prisma.account.update({
       where: { user_id, account_number, deleted_at: null },
       data: {
@@ -63,7 +63,7 @@ export class AccountRepository {
     });
   }
 
-  async deleteAccount(account_number: string) {
+  async deleteAccount(account_number: string): Promise<Account> {
     return await this.prisma.account.update({
       where: { account_number },
       data: { deleted_at: new Date() },
@@ -74,7 +74,7 @@ export class AccountRepository {
     tx: Prisma.TransactionClient,
     account_number: string,
     amount: Prisma.Decimal | number,
-  ) {
+  ): Promise<Account> {
     return await tx.account.update({
       where: { account_number, deleted_at: null },
       data: {

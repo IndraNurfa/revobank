@@ -12,6 +12,15 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+} from '@nestjs/swagger';
+import { Account } from '@prisma/client';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -20,10 +29,7 @@ import { TokenPayload } from 'src/auth/types/auth';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import {
-  ResponseAccountDto,
-  BaseAccountResponseDto,
-} from './dto/resp-account.dto';
+import { ResponseAccountDto } from './dto/resp-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -33,9 +39,15 @@ export class AccountsController {
 
   constructor(private readonly accountsService: AccountsService) {}
 
-  @UseInterceptors(new SerializationInterceptor(BaseAccountResponseDto))
+  @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
   @Get(':id')
-  findByAccountNumber(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Find account by account number' })
+  @ApiParam({ name: 'id', description: 'Account number' })
+  @ApiOkResponse({
+    description: 'Account details found',
+    type: ResponseAccountDto,
+  })
+  findByAccountNumber(@Param('id') id: string): Promise<Account> | undefined {
     try {
       return this.accountsService.findByAccountNumber(id);
     } catch (error) {
@@ -43,12 +55,20 @@ export class AccountsController {
     }
   }
 
+  @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
   @Patch(':id')
+  @ApiOperation({ summary: 'Update an account by ID' })
+  @ApiParam({ name: 'id', description: 'Account ID to update' })
+  @ApiBody({ type: UpdateAccountDto })
+  @ApiOkResponse({
+    description: 'Account updated successfully',
+    type: ResponseAccountDto,
+  })
   update(
     @Param('id') id: string,
     @CurrentUser() user: TokenPayload,
     @Body() updateAccountDto: UpdateAccountDto,
-  ) {
+  ): Promise<Account> | undefined {
     try {
       const { sub } = user;
       return this.accountsService.update(id, sub, updateAccountDto);
@@ -60,6 +80,10 @@ export class AccountsController {
   @Roles('admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete an account by ID (admin only)' })
+  @ApiParam({ name: 'id', description: 'Account ID to delete' })
+  @ApiNoContentResponse({ description: 'Successful delete account' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   async remove(@Param('id') id: string): Promise<void> {
     try {
       await this.accountsService.remove(id);
@@ -70,6 +94,12 @@ export class AccountsController {
 
   @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
   @Post()
+  @ApiOperation({ summary: 'Create a new account' })
+  @ApiBody({ type: CreateAccountDto })
+  @ApiOkResponse({
+    description: 'Account created successfully',
+    type: ResponseAccountDto,
+  })
   async create(
     @CurrentUser() user: TokenPayload,
     @Body() dto: CreateAccountDto,
@@ -84,7 +114,12 @@ export class AccountsController {
 
   @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
   @Get()
-  findAll(@CurrentUser() user: TokenPayload) {
+  @ApiOperation({ summary: 'Get all accounts (admin) or user’s own accounts' })
+  @ApiOkResponse({
+    description: 'List of accounts returned',
+    type: [ResponseAccountDto],
+  })
+  findAll(@CurrentUser() user: TokenPayload): Promise<Account[]> | undefined {
     try {
       const { role } = user;
       if (role === 'admin') {
