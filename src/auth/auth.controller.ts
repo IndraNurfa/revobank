@@ -13,6 +13,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
 import { AuthService } from './auth.service';
@@ -34,6 +40,15 @@ export class AuthController {
 
   @UseInterceptors(new SerializationInterceptor(ResponseRegisterDto))
   @Post('register')
+  @ApiOkResponse({
+    description: 'Successful registration',
+    type: ResponseRegisterDto,
+  })
+  @ApiOperation({ summary: 'Register a new user account' })
+  @ApiBody({
+    type: RegisterDto,
+    description: 'Json structure for user registration',
+  })
   async register(
     @Body() registerDto: RegisterDto,
   ): Promise<ResponseRegisterDto> {
@@ -60,6 +75,15 @@ export class AuthController {
   @UseInterceptors(new SerializationInterceptor(ResponseLoginDto))
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiOkResponse({
+    description: 'Successful login',
+    type: ResponseLoginDto,
+  })
+  @ApiOperation({ summary: 'Log in with email and password' })
+  @ApiBody({
+    type: LoginDto,
+    description: 'Json structure for user login',
+  })
   async login(@Body() loginDto: LoginDto) {
     try {
       return await this.authService.login(loginDto);
@@ -78,6 +102,7 @@ export class AuthController {
   @UseInterceptors(new SerializationInterceptor(ResponseRefreshTokenDto))
   @UseGuards(JwtRefreshGuard)
   @Put('refresh-token')
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
   getFullPayload(@CurrentUser() user: TokenPayload) {
     try {
       return this.authService.refreshToken(user);
@@ -96,6 +121,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('logout')
+  @ApiNoContentResponse({ description: 'Successful logout' })
+  @ApiOperation({ summary: 'Log out the currently authenticated user' })
   revokeToken(@CurrentUser() user: TokenPayload) {
     try {
       const { jti } = user;

@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsString, MaxLength } from 'class-validator';
 
 export class BaseUserDto {
   @ApiProperty({ example: 'johndoe', maxLength: 20 })
   @IsString()
+  @MaxLength(20)
   username: string;
 
   @ApiProperty({ example: 'johndoe@example.com' })
@@ -12,6 +13,7 @@ export class BaseUserDto {
 
   @ApiProperty({ example: '081234567890', maxLength: 15 })
   @IsString()
+  @MaxLength(15)
   phone_number: string;
 
   @ApiProperty({ example: 'John Doe' })

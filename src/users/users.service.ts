@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { Role, User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ResponseRegisterDto } from './dto/resp-user.dto';
-import { UserRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(private userRepo: UserRepository) {}
 
-  async create(dto: CreateUserDto): Promise<ResponseRegisterDto> {
+  async create(dto: CreateUserDto): Promise<User> {
     return await this.userRepo.create(dto);
   }
 
-  async findByUsername(username: string) {
+  async findByUsername(username: string): Promise<User & { role: Role }> {
     const data = await this.userRepo.findByUsername(username);
+    console.log(data);
     return data;
   }
 

@@ -1,8 +1,4 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { RandomNumberGenerator } from 'src/common/utils/generate-reference';
@@ -64,7 +60,9 @@ export class TransactionsService {
     );
 
     if (userAccount.user_id !== user_id) {
-      throw new BadRequestException('sender_account must from u');
+      throw new BadRequestException(
+        'The sender account does not belong to the authenticated user.',
+      );
     }
 
     const reference_id = this.randomNumberGenerator.generateReference();
@@ -94,9 +92,13 @@ export class TransactionsService {
     ]);
 
     if (sender_account.user_id !== user_id) {
-      throw new BadGatewayException('must from ur account');
+      throw new BadRequestException(
+        'The sender account does not belong to the authenticated user.',
+      );
     } else if ((sender_account.balance as unknown as number) - dto.amount < 0) {
-      throw new BadGatewayException('not enough balance');
+      throw new BadRequestException(
+        'Insufficient balance in the sender account.',
+      );
     }
 
     const reference_id = this.randomNumberGenerator.generateReference();
