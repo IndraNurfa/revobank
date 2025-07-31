@@ -8,8 +8,8 @@ import { UsersModule } from 'src/users/users.module';
 import { UsersService } from 'src/users/users.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -29,7 +29,15 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy, JwtRefreshStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  providers: [
+    JwtStrategy,
+    JwtRefreshStrategy,
+    {
+      provide: 'IAuthService',
+      useClass: AuthService,
+    },
+    UsersService,
+  ],
+  exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

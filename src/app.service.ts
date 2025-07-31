@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { IAppService } from './app.interface';
 import { PrismaService } from './prisma/prisma.service';
 
 @Injectable()
-export class AppService {
+export class AppService implements IAppService {
   constructor(private prisma: PrismaService) {}
 
   async getHealthCheck(): Promise<string> {

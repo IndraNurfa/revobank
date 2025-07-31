@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Logger,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -28,7 +30,7 @@ import {
   BaseTransactionResponseDto,
   DetailTransactionResponseDto,
 } from './dto/resp-transaction.dto';
-import { TransactionsService } from './transactions.service';
+import { ITransactionsService } from './transactions.interface';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -36,7 +38,10 @@ import { TransactionsService } from './transactions.service';
 export class TransactionsController {
   private logger = new Logger(TransactionsController.name);
 
-  constructor(private readonly transactionsService: TransactionsService) {}
+  constructor(
+    @Inject('ITransactionsService')
+    private readonly transactionsService: ITransactionsService,
+  ) {}
 
   @UseInterceptors(new SerializationInterceptor(BaseTransactionResponseDto))
   @Post('deposit')
@@ -107,7 +112,7 @@ export class TransactionsController {
     description: 'Transaction detail returned successfully',
     type: DetailTransactionResponseDto,
   })
-  findOne(@CurrentUser() user: TokenPayload, @Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     try {
       return this.transactionsService.findOne(id);
     } catch (error) {
@@ -122,11 +127,22 @@ export class TransactionsController {
     description: 'List of transactions returned successfully',
     type: [BaseTransactionResponseDto],
   })
-  findAll(@CurrentUser() user: TokenPayload) {
+  findAll(
+    @CurrentUser() user: TokenPayload,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
     try {
       const { sub, role } = user;
+      const pagination = {
+        limit: limit ? +limit : 10,
+        offset: offset ? +offset : 0,
+      };
       if (role === 'admin') {
-        return this.transactionsService.findAll();
+        return this.transactionsService.findAll(
+          pagination.limit,
+          pagination.offset,
+        );
       }
       return this.transactionsService.findAllByUserId(sub);
     } catch (error) {

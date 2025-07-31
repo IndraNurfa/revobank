@@ -8,6 +8,9 @@ import { CommonModule } from 'src/common/common.module';
 @Module({
   imports: [AccountsModule, CommonModule],
   controllers: [TransactionsController],
-  providers: [TransactionsService, TransactionsRepository],
+  providers: [
+    { provide: 'ITransactionsService', useClass: TransactionsService },
+    { provide: 'ITransactionsRepository', useClass: TransactionsRepository },
+  ],
 })
 export class TransactionsModule {}

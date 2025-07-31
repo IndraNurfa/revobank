@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import * as bcrypt from 'bcrypt';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { SessionService } from 'src/session/session.service';
+import { ISessionService } from 'src/session/session.interface';
 import { TokenPayload } from '../types/auth';
 
 @Injectable()
@@ -13,7 +13,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor(
     private configService: ConfigService,
-    private sessionService: SessionService,
+    @Inject('ISessionService')
+    private readonly sessionService: ISessionService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

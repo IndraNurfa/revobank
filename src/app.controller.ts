@@ -1,12 +1,14 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Inject, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AppService } from './app.service';
+import { IAppService } from './app.interface';
 
 @Controller()
 export class AppController {
   private logger = new Logger(AppController.name);
 
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    @Inject('IAppService') private readonly appService: IAppService,
+  ) {}
 
   @Get('health')
   @ApiOperation({ summary: 'Check database connection status' })

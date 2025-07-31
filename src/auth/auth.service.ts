@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -7,19 +8,21 @@ import { UserSession } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { JwtHelpers } from 'src/common/utils/jwt-helpers';
-import { SessionService } from 'src/session/session.service';
+import { ISessionService } from 'src/session/session.interface';
 import { UsersService } from '../users/users.service';
+import { IAuthService } from './auth.interface';
 import { jwtConstants } from './constant/constant';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import { ResponseLoginDto, ResponseRegisterDto } from './dto/resp-auth.dto';
 import { TokenPayload } from './types/auth';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly JwtHelpers: JwtHelpers,
-    private readonly sessionService: SessionService,
+    @Inject('ISessionService')
+    private readonly sessionService: ISessionService,
   ) {}
 
   async register(dto: RegisterDto): Promise<ResponseRegisterDto> {

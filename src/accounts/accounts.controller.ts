@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -28,9 +29,12 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { TokenPayload } from 'src/auth/types/auth';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
-import { AccountsService } from './accounts.service';
+import { IAccountsService } from './accounts.interface';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { ResponseAccountDto } from './dto/resp-account.dto';
+import {
+  DetailsResponseAccountDto,
+  ResponseAccountDto,
+} from './dto/resp-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @ApiBearerAuth()
@@ -39,9 +43,12 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 export class AccountsController {
   private logger = new Logger(AccountsController.name);
 
-  constructor(private readonly accountsService: AccountsService) {}
+  constructor(
+    @Inject('IAccountsService')
+    private readonly accountsService: IAccountsService,
+  ) {}
 
-  @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
+  @UseInterceptors(new SerializationInterceptor(DetailsResponseAccountDto))
   @Get(':id')
   @ApiOperation({ summary: 'Find account by account number' })
   @ApiParam({ name: 'id', description: 'Account number' })
@@ -49,7 +56,9 @@ export class AccountsController {
     description: 'Account details found',
     type: ResponseAccountDto,
   })
-  findByAccountNumber(@Param('id') id: string): Promise<Account> | undefined {
+  findByAccountNumber(
+    @Param('id') id: string,
+  ): Promise<Account | null> | undefined {
     try {
       return this.accountsService.findByAccountNumber(id);
     } catch (error) {
@@ -116,7 +125,7 @@ export class AccountsController {
 
   @UseInterceptors(new SerializationInterceptor(ResponseAccountDto))
   @Get()
-  @ApiOperation({ summary: 'Get all accounts (admin) or user’s own accounts' })
+  @ApiOperation({ summary: 'Get all accounts (admin) or users own accounts' })
   @ApiOkResponse({
     description: 'List of accounts returned',
     type: [ResponseAccountDto],

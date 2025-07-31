@@ -1,14 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { Account, AccountType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { IAccountsRepository } from './accounts.interface';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @Injectable()
-export class AccountRepository {
+export class AccountsRepository implements IAccountsRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(user_id: number, account_number: string, dto: CreateAccountDto) {
+  async create(
+    user_id: number,
+    account_number: string,
+    dto: CreateAccountDto,
+  ): Promise<
+    Prisma.AccountGetPayload<{
+      include: { user: { select: { full_name: true } } };
+    }>
+  > {
     return await this.prisma.account.create({
       data: {
         user_id,
@@ -17,34 +26,54 @@ export class AccountRepository {
         account_type: dto.account_type as AccountType,
       },
       include: {
-        user: true,
+        user: {
+          select: { full_name: true },
+        },
       },
     });
   }
 
-  async findByAccountNumber(account_number: string) {
+  async findByAccountNumber(
+    account_number: string,
+  ): Promise<Prisma.AccountGetPayload<{
+    include: { user: { select: { full_name: true } } };
+  }> | null> {
     return await this.prisma.account.findFirst({
       where: { account_number, deleted_at: null },
       include: {
-        user: true,
+        user: {
+          select: { full_name: true },
+        },
       },
     });
   }
 
-  async findByUserId(user_id: number): Promise<Account[]> {
+  async findByUserId(user_id: number): Promise<
+    Prisma.AccountGetPayload<{
+      include: { user: { select: { full_name: true } } };
+    }>[]
+  > {
     return await this.prisma.account.findMany({
       where: { user_id, deleted_at: null },
       include: {
-        user: true,
+        user: {
+          select: { full_name: true },
+        },
       },
     });
   }
 
-  async findAll(): Promise<Account[]> {
+  async findAll(): Promise<
+    Prisma.AccountGetPayload<{
+      include: { user: { select: { full_name: true } } };
+    }>[]
+  > {
     return await this.prisma.account.findMany({
       where: { deleted_at: null },
       include: {
-        user: true,
+        user: {
+          select: { full_name: true },
+        },
       },
     });
   }
