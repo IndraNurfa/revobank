@@ -16,10 +16,10 @@ async function main() {
   });
 
   const customerRole = await prisma.role.upsert({
-    where: { name: 'customer' },
+    where: { name: 'user' },
     update: {},
     create: {
-      name: 'customer',
+      name: 'user',
     },
   });
 

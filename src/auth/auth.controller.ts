@@ -14,6 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -121,6 +122,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('logout')
+  @ApiBearerAuth()
   @ApiNoContentResponse({ description: 'Successful logout' })
   @ApiOperation({ summary: 'Log out the currently authenticated user' })
   revokeToken(@CurrentUser() user: TokenPayload) {

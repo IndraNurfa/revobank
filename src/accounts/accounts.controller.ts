@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -32,6 +33,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { ResponseAccountDto } from './dto/resp-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('accounts')
 export class AccountsController {

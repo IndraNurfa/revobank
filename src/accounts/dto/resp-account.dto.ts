@@ -15,12 +15,6 @@ export class BaseAccountResponseDto {
   full_name!: string | null;
 
   @ApiProperty({
-    example: 1,
-    description: 'User ID associated with the account',
-  })
-  user_id: number;
-
-  @ApiProperty({
     example: '1234567890',
     description: 'Account number of the user',
   })

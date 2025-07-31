@@ -30,6 +30,18 @@ export class TransactionsService {
   }
 
   async deposit(user_id: number, dto: DepositTransactionDto) {
+    const userAccount = await this.accountService.findByAccountNumber(
+      dto.receiver_account,
+    );
+
+    if (userAccount.user_id !== user_id) {
+      throw new BadRequestException(
+        'The receiver account does not belong to the authenticated user.',
+      );
+    } else if (userAccount.id < 0 || userAccount === null) {
+      throw new BadRequestException('Invalid receiver account number');
+    }
+
     const reference_id = this.randomNumberGenerator.generateReference();
 
     const receiver_account = await this.accountService.findByAccountNumber(
@@ -63,6 +75,8 @@ export class TransactionsService {
       throw new BadRequestException(
         'The sender account does not belong to the authenticated user.',
       );
+    } else if (userAccount.id < 0 || userAccount === null) {
+      throw new BadRequestException('Invalid sender account number');
     }
 
     const reference_id = this.randomNumberGenerator.generateReference();
