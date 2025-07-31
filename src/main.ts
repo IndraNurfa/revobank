@@ -32,6 +32,10 @@ async function bootstrap() {
     .addTag('accounts', 'Account management endpoints')
     .addTag('transactions', 'Transaction management endpoints')
     .addBearerAuth()
+    .addGlobalResponse({
+      status: 500,
+      description: 'Internal server error',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
