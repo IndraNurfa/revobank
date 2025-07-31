@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AccountsModule } from './accounts/accounts.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/common.module';
 import { CoreModule } from './core/core.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
-import { UsersModule } from './users/users.module';
-import { SessionService } from './session/session.service';
 import { SessionModule } from './session/session.module';
-import { AccountsModule } from './accounts/accounts.module';
 import { TransactionsModule } from './transactions/transactions.module';
-import { CommonModule } from './common/common.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -37,6 +36,6 @@ import { CommonModule } from './common/common.module';
     CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, SessionService],
+  providers: [{ provide: 'IAppService', useClass: AppService }, PrismaService],
 })
 export class AppModule {}

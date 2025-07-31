@@ -5,6 +5,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Inject,
   InternalServerErrorException,
   Logger,
   NotFoundException,
@@ -22,7 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
-import { AuthService } from './auth.service';
+import { IAuthService } from './auth.interface';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
 import {
@@ -37,7 +38,9 @@ import { TokenPayload } from './types/auth';
 @Controller('auth')
 export class AuthController {
   private logger = new Logger(AuthController.name);
-  constructor(private authService: AuthService) {}
+  constructor(
+    @Inject('IAuthService') private readonly authService: IAuthService,
+  ) {}
 
   @UseInterceptors(new SerializationInterceptor(ResponseRegisterDto))
   @Post('register')

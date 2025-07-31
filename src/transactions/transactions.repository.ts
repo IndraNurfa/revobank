@@ -1,22 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { AccountRepository } from 'src/accounts/accounts.repository';
+import { Inject, Injectable } from '@nestjs/common';
+import { Prisma, Transaction } from '@prisma/client';
+import { IAccountsRepository } from 'src/accounts/accounts.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ITransactionsRepository } from './transactions.interface';
 
 @Injectable()
-export class TransactionsRepository {
-  private logger = new Logger(TransactionsRepository.name);
-
+export class TransactionsRepository implements ITransactionsRepository {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly accountRepo: AccountRepository,
+    @Inject('IAccountsRepository')
+    private readonly accountRepo: IAccountsRepository,
   ) {}
+
   async debit(
     prisma: Prisma.TransactionClient,
     account_id: number,
     reference_id: string,
     amount: number,
-  ) {
+  ): Promise<void> {
     await prisma.accountTransaction.create({
       data: {
         account_id,
@@ -32,7 +33,7 @@ export class TransactionsRepository {
     account_id: number,
     reference_id: string,
     amount: Prisma.Decimal | number,
-  ) {
+  ): Promise<void> {
     await prisma.accountTransaction.create({
       data: {
         account_id,
@@ -52,7 +53,7 @@ export class TransactionsRepository {
       description?: string;
       additional_info?: Prisma.InputJsonValue;
     },
-  ) {
+  ): Promise<Transaction> {
     return this.prisma.$transaction(async (tx) => {
       await tx.transaction.create({
         data: {
@@ -89,7 +90,7 @@ export class TransactionsRepository {
       description?: string;
       additional_info?: Prisma.InputJsonValue;
     },
-  ) {
+  ): Promise<Transaction> {
     return this.prisma.$transaction(async (tx) => {
       await tx.transaction.create({
         data: {
@@ -128,7 +129,7 @@ export class TransactionsRepository {
       description?: string;
       additional_info?: Prisma.InputJsonValue;
     },
-  ) {
+  ): Promise<Transaction> {
     return this.prisma.$transaction(async (tx) => {
       await tx.transaction.create({
         data: {
@@ -163,17 +164,90 @@ export class TransactionsRepository {
     });
   }
 
-  async findOne(reference_id: string) {
+  async findOne(reference_id: string): Promise<Prisma.TransactionGetPayload<{
+    include: {
+      account_transactions: {
+        include: {
+          account: {
+            select: {
+              account_name: true;
+              account_number: true;
+            };
+          };
+        };
+      };
+    };
+  }> | null> {
     return await this.prisma.transaction.findFirst({
       where: { reference_id },
-      include: { account_transactions: { include: { account: true } } },
+      include: {
+        account_transactions: {
+          include: {
+            account: { select: { account_name: true, account_number: true } },
+          },
+        },
+      },
     });
   }
 
-  async findAllByUserId(user_id: number) {
+  async findAllByUserId(user_id: number): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        account_transactions: {
+          include: {
+            account: {
+              select: {
+                account_name: true;
+                account_number: true;
+              };
+            };
+          };
+        };
+      };
+    }>[]
+  > {
     return await this.prisma.transaction.findMany({
       where: { account: { user_id } },
-      include: { account_transactions: { include: { account: true } } },
+      include: {
+        account_transactions: {
+          include: {
+            account: { select: { account_name: true, account_number: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async findAll(
+    limit: number,
+    offset: number,
+  ): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        account_transactions: {
+          include: {
+            account: {
+              select: {
+                account_name: true;
+                account_number: true;
+              };
+            };
+          };
+        };
+      };
+    }>[]
+  > {
+    return await this.prisma.transaction.findMany({
+      skip: limit,
+      take: offset,
+      orderBy: { created_at: 'desc' },
+      include: {
+        account_transactions: {
+          include: {
+            account: { select: { account_name: true, account_number: true } },
+          },
+        },
+      },
     });
   }
 }

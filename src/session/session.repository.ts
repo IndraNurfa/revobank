@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SessionType } from './types/session';
 import { UserSession } from '@prisma/client';
+import { ISessionRepository } from './session.interface';
 
 @Injectable()
-export class SessionRepository {
+export class SessionRepository implements ISessionRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(data: SessionType): Promise<UserSession> {

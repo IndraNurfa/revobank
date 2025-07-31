@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { SessionRepository } from './session.repository';
-import { SessionType } from './types/session';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserSession } from '@prisma/client';
+import { ISessionRepository, ISessionService } from './session.interface';
+import { SessionType } from './types/session';
 
 @Injectable()
-export class SessionService {
-  constructor(private sessionRepo: SessionRepository) {}
+export class SessionService implements ISessionService {
+  constructor(
+    @Inject('ISessionRepository')
+    private readonly sessionRepo: ISessionRepository,
+  ) {}
 
   async create(data: SessionType): Promise<UserSession> {
     return await this.sessionRepo.create(data);

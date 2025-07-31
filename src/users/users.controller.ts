@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Logger,
   Patch,
   UseGuards,
@@ -22,7 +23,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ResponseGetUsersDto } from './dto/resp-user.dto';
 import { UpdateUserPartialDto } from './dto/update-user-partial.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersService } from './users.service';
+import { IUsersService } from './users.interface';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -30,7 +31,9 @@ import { UsersService } from './users.service';
 export class UsersController {
   private logger = new Logger(UsersController.name);
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    @Inject('IUsersService') private readonly usersService: IUsersService,
+  ) {}
 
   @Get('profile')
   @UseInterceptors(new SerializationInterceptor(ResponseGetUsersDto))

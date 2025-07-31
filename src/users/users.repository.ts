@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { IUsersRepository } from './users.interface';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository implements IUsersRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<User> {
@@ -14,11 +15,17 @@ export class UserRepository {
     });
   }
 
-  async findByUsername(username: string): Promise<User & { role: Role }> {
+  async findByUsername(username: string): Promise<
+    Prisma.UserGetPayload<{
+      include: { role: { select: { name: true } } };
+    }>
+  > {
     return this.prisma.user.findUniqueOrThrow({
       where: { username },
       include: {
-        role: true,
+        role: {
+          select: { name: true },
+        },
       },
     });
   }

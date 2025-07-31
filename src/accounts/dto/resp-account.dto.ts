@@ -3,24 +3,12 @@ import { Expose, Transform, Type } from 'class-transformer';
 
 export class BaseAccountResponseDto {
   @ApiProperty({
-    example: 'John Doe',
-    description:
-      'Full name of the account owner (transformed from account_number)',
-  })
-  @Expose()
-  @Transform(
-    ({ obj }: { obj: { account_number?: string } }) => obj.account_number ?? '',
-    { toClassOnly: true },
-  )
-  full_name!: string | null;
-
-  @ApiProperty({
     example: '1234567890',
     description: 'Account number of the user',
   })
   @Expose()
   @Transform(
-    ({ obj }: { obj: { account_name?: string } }) => obj.account_name ?? '',
+    ({ obj }: { obj: { account_number?: string } }) => obj.account_number ?? '',
     { toClassOnly: true },
   )
   account_number: string;
@@ -62,4 +50,19 @@ export class ResponseAccountDto extends BaseAccountResponseDto {
   @Expose()
   @Type(() => String)
   balance: string;
+}
+
+export class DetailsResponseAccountDto extends ResponseAccountDto {
+  @ApiProperty({
+    example: 'John Doe',
+    description:
+      'Full name of the account owner (transformed from account_number)',
+  })
+  @Expose()
+  @Transform(
+    ({ obj }: { obj: { user?: { full_name?: string } } }) =>
+      obj.user?.full_name ?? null,
+    { toClassOnly: true },
+  )
+  full_name!: string | null;
 }

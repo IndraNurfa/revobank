@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AccountsService } from './accounts.service';
-import { AccountsController } from './accounts.controller';
 import { JwtService } from '@nestjs/jwt';
 import { CommonModule } from 'src/common/common.module';
-import { AccountRepository } from './accounts.repository';
+import { AccountsController } from './accounts.controller';
+import { AccountsRepository } from './accounts.repository';
+import { AccountsService } from './accounts.service';
 
 @Module({
   imports: [CommonModule],
   controllers: [AccountsController],
-  providers: [AccountsService, JwtService, AccountRepository],
-  exports: [AccountsService, AccountRepository],
+  providers: [
+    { provide: 'IAccountsService', useClass: AccountsService },
+    { provide: 'IAccountsRepository', useClass: AccountsRepository },
+    JwtService,
+  ],
+  exports: ['IAccountsService', 'IAccountsRepository'],
 })
 export class AccountsModule {}

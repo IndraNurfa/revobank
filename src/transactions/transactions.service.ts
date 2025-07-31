@@ -1,40 +1,108 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Prisma, Transaction } from '@prisma/client';
 import { instanceToPlain } from 'class-transformer';
-import { AccountsService } from 'src/accounts/accounts.service';
+import { IAccountsService } from 'src/accounts/accounts.interface';
 import { RandomNumberGenerator } from 'src/common/utils/generate-reference';
 import {
   DepositTransactionDto,
   TransferTransactionDto,
   WithdrawTransactionDto,
 } from './dto/create-transaction.dto';
-import { TransactionsRepository } from './transactions.repository';
+import {
+  ITransactionsRepository,
+  ITransactionsService,
+} from './transactions.interface';
 
 @Injectable()
-export class TransactionsService {
+export class TransactionsService implements ITransactionsService {
   constructor(
-    private readonly transactionRepo: TransactionsRepository,
-    private readonly accountService: AccountsService,
+    @Inject('IAccountsService')
+    private readonly accountService: IAccountsService,
+    @Inject('ITransactionsRepository')
+    private readonly transactionRepo: ITransactionsRepository,
     private readonly randomNumberGenerator: RandomNumberGenerator,
   ) {}
 
-  findAll() {
-    return `This action returns all transactions`;
+  async findAll(
+    limit: number,
+    offset: number,
+  ): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        account_transactions: {
+          select: {
+            account_transaction_type: true;
+          };
+          include: {
+            account: {
+              select: {
+                account_name: true;
+                account_number: true;
+              };
+            };
+          };
+        };
+      };
+    }>[]
+  > {
+    return await this.transactionRepo.findAll(limit, offset);
   }
 
-  async findAllByUserId(sub: number) {
+  async findAllByUserId(sub: number): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        account_transactions: {
+          select: {
+            account_transaction_type: true;
+          };
+          include: {
+            account: {
+              select: {
+                account_name: true;
+                account_number: true;
+              };
+            };
+          };
+        };
+      };
+    }>[]
+  > {
     return await this.transactionRepo.findAllByUserId(sub);
   }
 
-  async findOne(id: string) {
-    return await this.transactionRepo.findOne(id);
+  async findOne(id: string): Promise<Prisma.TransactionGetPayload<{
+    include: {
+      account_transactions: {
+        select: {
+          account_transaction_type: true;
+        };
+        include: {
+          account: {
+            select: {
+              account_name: true;
+              account_number: true;
+            };
+          };
+        };
+      };
+    };
+  }> | null> {
+    const data = await this.transactionRepo.findOne(id);
+    if (!data) {
+      throw new BadRequestException('Transaction not found');
+    }
+    return data;
   }
 
-  async deposit(user_id: number, dto: DepositTransactionDto) {
+  async deposit(
+    user_id: number,
+    dto: DepositTransactionDto,
+  ): Promise<Transaction> {
     const userAccount = await this.accountService.findByAccountNumber(
       dto.receiver_account,
     );
 
-    if (userAccount.user_id !== user_id) {
+    if (userAccount?.user_id !== user_id) {
       throw new BadRequestException(
         'The receiver account does not belong to the authenticated user.',
       );
@@ -47,6 +115,10 @@ export class TransactionsService {
     const receiver_account = await this.accountService.findByAccountNumber(
       dto.receiver_account,
     );
+
+    if (!receiver_account) {
+      throw new BadRequestException('Receiver account not found');
+    }
 
     const plainAdditionalInfo = dto.additional_info
       ? instanceToPlain(dto.additional_info)
@@ -66,12 +138,15 @@ export class TransactionsService {
     );
   }
 
-  async withdraw(user_id: number, dto: WithdrawTransactionDto) {
+  async withdraw(
+    user_id: number,
+    dto: WithdrawTransactionDto,
+  ): Promise<Transaction> {
     const userAccount = await this.accountService.findByAccountNumber(
       dto.sender_account,
     );
 
-    if (userAccount.user_id !== user_id) {
+    if (userAccount?.user_id !== user_id) {
       throw new BadRequestException(
         'The sender account does not belong to the authenticated user.',
       );
@@ -99,13 +174,18 @@ export class TransactionsService {
     );
   }
 
-  async transfer(user_id: number, dto: TransferTransactionDto) {
+  async transfer(
+    user_id: number,
+    dto: TransferTransactionDto,
+  ): Promise<Transaction> {
     const [sender_account, receiver_account] = await Promise.all([
       await this.accountService.findByAccountNumber(dto.sender_account),
       await this.accountService.findByAccountNumber(dto.receiver_account),
     ]);
 
-    if (sender_account.user_id !== user_id) {
+    if (!sender_account || !receiver_account) {
+      throw new BadRequestException('Invalid account number');
+    } else if (sender_account.user_id !== user_id) {
       throw new BadRequestException(
         'The sender account does not belong to the authenticated user.',
       );
