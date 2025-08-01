@@ -22,7 +22,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
-import { SerializationInterceptor } from 'src/core/interceptors/serialization.interceptor';
+import { SerializationInterceptor } from '../core/interceptors/serialization.interceptor';
 import { IAuthService } from './auth.interface';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
@@ -88,18 +88,11 @@ export class AuthController {
     type: LoginDto,
     description: 'Json structure for user login',
   })
-  async login(@Body() loginDto: LoginDto) {
+  login(@Body() loginDto: LoginDto) {
     try {
-      return await this.authService.login(loginDto);
+      return this.authService.login(loginDto);
     } catch (error) {
       this.logger.error('Login failed', error);
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException('username or password is invalid.');
-        }
-      }
-      throw new InternalServerErrorException('something wrong on our side');
     }
   }
 

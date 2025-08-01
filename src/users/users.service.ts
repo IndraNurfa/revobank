@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,7 +20,13 @@ export class UsersService implements IUsersService {
       include: { role: { select: { name: true } } };
     }>
   > {
-    return await this.userRepo.findByUsername(username);
+    const user = await this.userRepo.findByUsername(username);
+
+    if (!user) {
+      throw new BadRequestException('username not found');
+    }
+
+    return user;
   }
 
   async update(id: number, data: UpdateUserDto): Promise<User> {
