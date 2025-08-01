@@ -15,12 +15,10 @@ export class UserRepository implements IUsersRepository {
     });
   }
 
-  async findByUsername(username: string): Promise<
-    Prisma.UserGetPayload<{
-      include: { role: { select: { name: true } } };
-    }>
-  > {
-    return this.prisma.user.findUniqueOrThrow({
+  async findByUsername(username: string): Promise<Prisma.UserGetPayload<{
+    include: { role: { select: { name: true } } };
+  }> | null> {
+    return this.prisma.user.findUnique({
       where: { username },
       include: {
         role: {

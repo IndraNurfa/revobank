@@ -1,19 +1,19 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { UserSession } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { JwtHelpers } from 'src/common/utils/jwt-helpers';
+import { JwtHelpers } from '../common/utils/jwt-helpers';
 import { ISessionService } from 'src/session/session.interface';
 import { UsersService } from '../users/users.service';
 import { IAuthService } from './auth.interface';
 import { jwtConstants } from './constant/constant';
 import { LoginDto, RegisterDto } from './dto/req-auth.dto';
-import { ResponseLoginDto, ResponseRegisterDto } from './dto/resp-auth.dto';
+import { ResponseRegisterDto } from './dto/resp-auth.dto';
 import { TokenPayload } from './types/auth';
 
 @Injectable()
@@ -35,11 +35,11 @@ export class AuthService implements IAuthService {
     return await this.userService.create(dto);
   }
 
-  async login(dto: LoginDto): Promise<ResponseLoginDto | null> {
+  async login(dto: LoginDto) {
     const existingUser = await this.userService.findByUsername(dto.username);
 
     if (!existingUser) {
-      throw new UnauthorizedException('username or password is invalid.');
+      throw new BadRequestException('username not found');
     }
 
     const plaintextPassword = dto.password;
@@ -51,7 +51,7 @@ export class AuthService implements IAuthService {
     );
 
     if (!isPasswordMatching) {
-      throw new UnauthorizedException('username or password is invalid.');
+      throw new BadRequestException('username or password is invalid.');
     }
 
     const uuid = randomUUID();
