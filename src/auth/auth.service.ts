@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { UserSession } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { randomUUID } from 'crypto';
-import { JwtHelpers } from '../common/utils/jwt-helpers';
+import { MailService } from 'src/mail/mail.service';
 import { ISessionService } from 'src/session/session.interface';
+import { JwtHelpers } from '../common/utils/jwt-helpers';
 import { UsersService } from '../users/users.service';
 import { IAuthService } from './auth.interface';
 import { jwtConstants } from './constant/constant';
@@ -23,7 +25,12 @@ export class AuthService implements IAuthService {
     private readonly JwtHelpers: JwtHelpers,
     @Inject('ISessionService')
     private readonly sessionService: ISessionService,
+    private readonly mailService: MailService,
   ) {}
+
+  hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
 
   async register(dto: RegisterDto): Promise<ResponseRegisterDto> {
     const hash = await bcrypt.hash(dto.password, 10);
@@ -32,7 +39,18 @@ export class AuthService implements IAuthService {
     dto.password = hash;
     dto.dob = dob;
 
-    return await this.userService.create(dto);
+    const data = await this.userService.create(dto);
+    if (!data) {
+      throw new InternalServerErrorException('Failed to create user');
+    }
+
+    // Send welcome email
+    // await this.mailService.sendEmail(
+    //   'Welcome to Our Service',
+    //   dto.email,
+    //   dto.full_name,
+    // );
+    return data;
   }
 
   async login(dto: LoginDto) {
@@ -64,6 +82,7 @@ export class AuthService implements IAuthService {
         existingUser.role.name,
         jwtConstants.access_token_expires,
         uuid,
+        'access_token',
       ),
       this.JwtHelpers.generate(
         existingUser.id,
@@ -72,13 +91,12 @@ export class AuthService implements IAuthService {
         existingUser.role.name,
         jwtConstants.refresh_token_expires,
         uuid,
+        'refresh_token',
       ),
     ]);
 
-    const [hash_token, hash_refresh_token] = await Promise.all([
-      await bcrypt.hash(access_token, 10),
-      await bcrypt.hash(refresh_token, 10),
-    ]);
+    const hash_token = this.hashToken(access_token);
+    const hash_refresh_token = this.hashToken(refresh_token);
 
     await this.sessionService.create({
       user_id: existingUser.id,
@@ -106,6 +124,7 @@ export class AuthService implements IAuthService {
       role,
       jwtConstants.access_token_expires,
       jti,
+      'access_token',
     );
 
     const hashToken = await bcrypt.hash(access_token, 10);

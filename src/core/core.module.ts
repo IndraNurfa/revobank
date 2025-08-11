@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
+import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({

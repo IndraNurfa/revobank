@@ -12,6 +12,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { SessionModule } from './session/session.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     AccountsModule,
     TransactionsModule,
     CommonModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [{ provide: 'IAppService', useClass: AppService }, PrismaService],

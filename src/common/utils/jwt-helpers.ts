@@ -12,8 +12,9 @@ export class JwtHelpers {
     role: string,
     expires: string,
     uuid: string,
+    type: string,
   ): Promise<string> {
-    const payload = { sub: id, username, full_name, role };
+    const payload = { sub: id, username, full_name, role, type };
 
     const token = this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,

@@ -1,7 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ISessionService } from 'src/session/session.interface';
 import { TokenPayload } from '../types/auth';
@@ -34,7 +34,12 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw new UnauthorizedException('Token not found');
     }
 
+    if (payload.type !== 'refresh_token') {
+      throw new UnauthorizedException('Invalid token type');
+    }
+
     const jti = payload.jti;
+    const hastToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const session = await this.sessionService.findOne(jti);
 
@@ -42,13 +47,14 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw new UnauthorizedException('Session not found');
     }
 
-    const isMatch = await bcrypt.compare(token, session.refresh_token);
+    const refreshToken = session.refresh_token;
+
+    const isMatch = hastToken === refreshToken;
 
     if (!isMatch) {
       throw new UnauthorizedException('Invalid token');
     }
 
-    // Remove password from user object before returning
     return {
       sub: payload.sub,
       username: payload.username,

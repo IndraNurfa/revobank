@@ -17,4 +17,5 @@ export interface TokenPayload {
   iat?: number;
   exp?: number;
   jti: string;
+  type?: string;
 }
